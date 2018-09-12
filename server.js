@@ -36,9 +36,12 @@ setInterval(() => stockData.addStockDataAndNewVolatility(), INTERVAL_MS)
 io.sockets.on('connection', function(socket) {
   volatility.getNewestVolatility()
     .then((resp) => socket.emit('volatility', resp.data));
-  setInterval(() => volatility.getNewestVolatility()
-    .then((resp) => socket.emit('volatility', resp.data)), INTERVAL_MS)
 })
+
+setInterval(() => {
+  volatility.getNewestVolatility()
+    .then((resp) => io.sockets.emit('volatility', resp.data))
+}, INTERVAL_MS);
 
 server.listen(PORT);
 
