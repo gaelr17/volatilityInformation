@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Websocket Server</title>
+    </head>
+
+    <body>
+        <h1>Volatility is updated every 10 seconds</h1>
+        <label id="volat">Loading volatility ... </label>
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            var socket = io.connect('http://localhost:3000');
+            function changeVolatility(volatility) {
+                $('#volat').html(`Volatility (${volatility.timestamp}) : ${Math.round(volatility.value*100)/100}`);
+            }
+            socket.on('volatility', function(volatility) {
+                changeVolatility(volatility);
+            });
+        </script>
+    </body>
+</html>
