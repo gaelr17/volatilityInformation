@@ -11,11 +11,10 @@ const Volatility = require('./components/volatility/volatilityModel');
 const volatility = require('./components/volatility/volatilityController');
 const volatilityRoutes = require('./components/volatility/volatilityRoutes');
 
-const PORT = 3000;
-const INTERVAL_MS = 10000;
+const { PORT, INTERVAL_MS } = require('./constants');
 
 mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017/db', { useNewUrlParser: true });
+mongoose.connect('mongodb://localhost:27017/volatilityDB', { useNewUrlParser: true });
 
 app.use(bodyParser.urlencoded({ extended: true}));
 app.use(bodyParser.json());
@@ -31,17 +30,19 @@ app.use(function(req, res) {
   res.status(404).send({url: req.originalUrl + ' not found'})
 });
 
-setInterval(() => stockData.addStockDataAndNewVolatility(), INTERVAL_MS)
+setInterval(
+  function() {
+    stockData.addStockDataAndNewVolatility();
+    volatility.getNewestVolatility()
+      .then((resp) => io.sockets.emit('volatility', resp.data))
+  }, INTERVAL_MS
+
+)
 
 io.sockets.on('connection', function(socket) {
   volatility.getNewestVolatility()
     .then((resp) => socket.emit('volatility', resp.data));
 })
-
-setInterval(() => {
-  volatility.getNewestVolatility()
-    .then((resp) => io.sockets.emit('volatility', resp.data))
-}, INTERVAL_MS);
 
 server.listen(PORT);
 
